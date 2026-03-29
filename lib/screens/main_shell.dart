@@ -5,7 +5,8 @@ import 'package:flutter_application_1/screens/reviews/reviews_screen.dart';
 import 'package:flutter_application_1/screens/scan/scan_screen.dart';
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key, bool? isPremium}) : isPremium = isPremium ?? false;
+  const MainShell({super.key, bool? isPremium})
+    : isPremium = isPremium ?? false;
 
   final bool isPremium;
 
@@ -17,32 +18,31 @@ class _MainShellState extends State<MainShell> {
   int _index = 0;
 
   List<Widget> get _pages => [
-        const HomeScreen(),
-        const ScanScreen(),
-        const ReviewsScreen(),
-        if (widget.isPremium)
-          ProfileScreen(isPremium: widget.isPremium),
-      ];
+    const HomeScreen(),
+    const ScanScreen(),
+    const ReviewsScreen(),
+    if (widget.isPremium) ProfileScreen(isPremium: widget.isPremium),
+  ];
 
   List<BottomNavigationBarItem> get _navItems => [
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.home_rounded),
-          label: 'Home',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.qr_code_scanner),
-          label: 'Scan',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.reviews_rounded),
-          label: 'Reviews',
-        ),
-        if (widget.isPremium)
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-      ];
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.home_rounded),
+      label: 'Home',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.qr_code_scanner),
+      label: 'Scan',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.reviews_rounded),
+      label: 'Reviews',
+    ),
+    if (widget.isPremium)
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.person_outline),
+        label: 'Profile',
+      ),
+  ];
 
   @override
   Widget build(BuildContext context) {

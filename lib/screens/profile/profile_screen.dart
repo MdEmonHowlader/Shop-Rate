@@ -5,7 +5,7 @@ import 'package:flutter_application_1/widgets/review_tile.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, bool? isPremium})
-      : isPremium = isPremium ?? false;
+    : isPremium = isPremium ?? false;
 
   final bool isPremium;
 
