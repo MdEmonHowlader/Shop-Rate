@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/admin/admin_dashboard_screen.dart';
 import 'package:flutter_application_1/screens/auth/register_screen.dart';
 import 'package:flutter_application_1/screens/main_shell.dart';
+import 'package:flutter_application_1/services/app_session.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 
 enum LoginMode { user, admin }
 
@@ -18,6 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   late LoginMode _mode;
 
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -25,11 +30,35 @@ class _LoginScreenState extends State<LoginScreen> {
     _mode = widget.initialMode;
   }
 
-  void _submit() {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSubmitting = true);
+    final user = await FirebaseService.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      adminMode: _mode == LoginMode.admin,
+    );
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid credentials for selected role')),
+      );
+      return;
+    }
+
+    AppSession.setUser(user);
     final destination = _mode == LoginMode.admin
         ? const AdminDashboardScreen()
-        : const MainShell(isPremium: true);
+        : MainShell(isPremium: user.isPremium);
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => destination),
       (route) => false,
@@ -120,6 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             children: [
                               TextFormField(
+                                controller: _emailController,
                                 decoration: const InputDecoration(
                                   labelText: 'Email',
                                   hintText: 'your@email.com',
@@ -131,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
+                                controller: _passwordController,
                                 decoration: const InputDecoration(
                                   labelText: 'Password',
                                 ),
@@ -150,8 +181,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: _submit,
-                                  child: const Text('Sign In'),
+                                  onPressed: _isSubmitting ? null : _submit,
+                                  child: Text(
+                                    _isSubmitting ? 'Signing in...' : 'Sign In',
+                                  ),
                                 ),
                               ),
                             ],

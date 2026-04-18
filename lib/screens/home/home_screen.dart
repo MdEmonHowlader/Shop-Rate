@@ -1,117 +1,152 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/data/sample_data.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 import 'package:flutter_application_1/widgets/review_tile.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final Future<_HomePayload> _payload;
+
+  @override
+  void initState() {
+    super.initState();
+    _payload = _load();
+  }
+
+  Future<_HomePayload> _load() async {
+    final stores = await FirebaseService.fetchStores();
+    final reviews = await FirebaseService.fetchReviews();
+    return _HomePayload(stores: stores, reviews: reviews);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return FutureBuilder<_HomePayload>(
+      future: _payload,
+      builder: (context, snapshot) {
+        final stores = snapshot.data?.stores ?? storeData;
+        final reviews = snapshot.data?.reviews ?? reviewData;
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Discover & Review',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'ShopRate',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                const CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Color(0x260F65FF),
-                  child: Icon(
-                    Icons.notifications_none,
-                    color: Color(0xFF0F65FF),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F65FF), Color(0xFF4BB0FF)],
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
+                Row(
+                  children: [
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          'Scan Shop Barcode',
+                          'Discover & Review',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'ShopRate',
                           style: TextStyle(
-                            color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Start rating your experience',
-                          style: TextStyle(color: Colors.white70),
-                        ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                    const Spacer(),
+                    const CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Color(0x260F65FF),
+                      child: Icon(
+                        Icons.notifications_none,
+                        color: Color(0xFF0F65FF),
+                      ),
                     ),
-                    padding: const EdgeInsets.all(16),
-                    child: const Icon(
-                      Icons.qr_code_scanner,
-                      color: Color(0xFF0F65FF),
-                      size: 32,
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F65FF), Color(0xFF4BB0FF)],
                     ),
                   ),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Scan Shop Barcode',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Start rating your experience',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: const Icon(
+                          Icons.qr_code_scanner,
+                          color: Color(0xFF0F65FF),
+                          size: 32,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const _SectionHeader(title: 'Your Recent Reviews'),
+                const SizedBox(height: 12),
+                ...reviews.take(2).map((review) => ReviewTile(review: review)),
+                const SizedBox(height: 24),
+                const _SectionHeader(title: 'Top Rated Nearby'),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 150,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) =>
+                        _StoreCard(store: stores[index]),
+                    separatorBuilder: (context, _) => const SizedBox(width: 16),
+                    itemCount: stores.length,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const _SectionHeader(title: 'Your Recent Reviews'),
-            const SizedBox(height: 12),
-            ...reviewData.take(2).map((review) => ReviewTile(review: review)),
-            const SizedBox(height: 24),
-            const _SectionHeader(title: 'Top Rated Nearby'),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 150,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) =>
-                    _StoreCard(store: storeData[index]),
-                separatorBuilder: (context, _) => const SizedBox(width: 16),
-                itemCount: storeData.length,
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+}
+
+class _HomePayload {
+  const _HomePayload({required this.stores, required this.reviews});
+
+  final List<StoreInfo> stores;
+  final List<ReviewEntry> reviews;
 }
 
 class _SectionHeader extends StatelessWidget {

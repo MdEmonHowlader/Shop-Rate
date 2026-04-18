@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/main_shell.dart';
+import 'package:flutter_application_1/services/app_session.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,11 +12,49 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isSubmitting = false;
 
-  void _submit() {
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    final user = await FirebaseService.registerUser(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email already exists or request failed')),
+      );
+      return;
+    }
+
+    AppSession.setUser(user);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainShell(isPremium: true)),
+      MaterialPageRoute(builder: (_) => MainShell(isPremium: user.isPremium)),
       (route) => false,
     );
   }
@@ -107,6 +147,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: Column(
                             children: [
                               TextFormField(
+                                controller: _nameController,
                                 decoration: const InputDecoration(
                                   labelText: 'Full Name',
                                 ),
@@ -117,6 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
+                                controller: _emailController,
                                 decoration: const InputDecoration(
                                   labelText: 'Email',
                                 ),
@@ -127,6 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
+                                controller: _passwordController,
                                 decoration: const InputDecoration(
                                   labelText: 'Password',
                                 ),
@@ -138,21 +181,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
+                                controller: _confirmPasswordController,
                                 decoration: const InputDecoration(
                                   labelText: 'Confirm Password',
                                 ),
                                 obscureText: true,
                                 validator: (value) =>
-                                    value != null && value.length >= 6
+                                    value != null && value.isNotEmpty
                                     ? null
-                                    : 'Min 6 characters',
+                                    : 'Confirm your password',
                               ),
                               const SizedBox(height: 24),
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: _submit,
-                                  child: const Text('Create Account'),
+                                  onPressed: _isSubmitting ? null : _submit,
+                                  child: Text(
+                                    _isSubmitting
+                                        ? 'Creating account...'
+                                        : 'Create Account',
+                                  ),
                                 ),
                               ),
                             ],

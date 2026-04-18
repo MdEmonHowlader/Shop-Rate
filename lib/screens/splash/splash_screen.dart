@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/auth/auth_landing_screen.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 
 class SplashGate extends StatefulWidget {
   const SplashGate({super.key});
@@ -12,12 +13,16 @@ class _SplashGateState extends State<SplashGate> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthLandingScreen()),
-      );
-    });
+    _boot();
+  }
+
+  Future<void> _boot() async {
+    await FirebaseService.ensureSeedData();
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const AuthLandingScreen()),
+    );
   }
 
   @override

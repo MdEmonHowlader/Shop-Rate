@@ -1,24 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/data/sample_data.dart';
+import 'package:flutter_application_1/data/user_profile.dart';
+import 'package:flutter_application_1/screens/auth/auth_landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
+import 'package:flutter_application_1/services/app_session.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 import 'package:flutter_application_1/widgets/review_tile.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, bool? isPremium})
     : isPremium = isPremium ?? false;
 
   final bool isPremium;
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserProfile? get _user => AppSession.currentUser;
+
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseService.logout();
+    AppSession.clear();
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthLandingScreen()),
+      (route) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final displayName = _user?.name ?? 'John Doe';
+    final displayEmail = _user?.email ?? 'john.doe@email.com';
+    final avatarText = displayName.isNotEmpty
+        ? displayName
+              .trim()
+              .split(RegExp(r'\s+'))
+              .take(2)
+              .map((part) => part[0].toUpperCase())
+              .join()
+        : 'JD';
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Profile'),
         actions: [
-          if (isPremium)
+          if (widget.isPremium)
             TextButton(
-              onPressed: () {},
+              onPressed: () => _logout(context),
               child: const Text('Logout', style: TextStyle(color: Colors.red)),
             )
           else
@@ -43,36 +75,36 @@ class ProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
-              children: const [
+              children: [
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Color(0xFFE0E7FF),
                   child: Text(
-                    'JD',
-                    style: TextStyle(
+                    avatarText,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF0F65FF),
                     ),
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
-                  'John Doe',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  displayName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'john.doe@email.com',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                SizedBox(height: 12),
-                _StatRow(),
+                const SizedBox(height: 4),
+                Text(displayEmail, style: const TextStyle(color: Colors.grey)),
+                const SizedBox(height: 12),
+                _StatRow(user: _user),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          _MembershipCard(isPremium: isPremium),
+          _MembershipCard(isPremium: widget.isPremium),
           const SizedBox(height: 24),
           const Text(
             'Your Reviews',
@@ -186,15 +218,23 @@ class _MembershipCard extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow();
+  const _StatRow({required this.user});
+
+  final UserProfile? user;
 
   @override
   Widget build(BuildContext context) {
     const stats = [
-      {'label': 'Total Reviews', 'value': '47'},
-      {'label': 'Helpful Votes', 'value': '128'},
-      {'label': 'Rank', 'value': '#234'},
+      {'label': 'Total Reviews', 'key': 'totalReviews'},
+      {'label': 'Helpful Votes', 'key': 'helpfulVotes'},
+      {'label': 'Rank', 'key': 'rank'},
     ];
+
+    final values = {
+      'totalReviews': '${user?.totalReviews ?? 47}',
+      'helpfulVotes': '${user?.helpfulVotes ?? 128}',
+      'rank': user?.rank ?? '#234',
+    };
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -203,7 +243,7 @@ class _StatRow extends StatelessWidget {
             (stat) => Column(
               children: [
                 Text(
-                  stat['value']!,
+                  values[stat['key']]!,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

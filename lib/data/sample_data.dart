@@ -12,6 +12,24 @@ class StoreInfo {
   final double rating;
   final Color color;
   final String category;
+
+  factory StoreInfo.fromJson(Map<String, dynamic> json) {
+    return StoreInfo(
+      name: json['name'] as String? ?? 'Unknown Store',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      color: Color((json['color'] as num?)?.toInt() ?? 0xFF4C6FFF),
+      category: json['category'] as String? ?? 'General',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'rating': rating,
+      'color': color.toARGB32(),
+      'category': category,
+    };
+  }
 }
 
 class ReviewEntry {
@@ -28,6 +46,26 @@ class ReviewEntry {
   final double rating;
   final String title;
   final String detail;
+
+  factory ReviewEntry.fromJson(Map<String, dynamic> json) {
+    return ReviewEntry(
+      user: json['user'] as String? ?? 'Anonymous',
+      timeAgo: json['timeAgo'] as String? ?? 'just now',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      title: json['title'] as String? ?? 'Untitled review',
+      detail: json['detail'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user,
+      'timeAgo': timeAgo,
+      'rating': rating,
+      'title': title,
+      'detail': detail,
+    };
+  }
 }
 
 const List<StoreInfo> storeData = [

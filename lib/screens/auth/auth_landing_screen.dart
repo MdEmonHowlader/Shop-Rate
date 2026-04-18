@@ -191,28 +191,3 @@ class _LandingCard extends StatelessWidget {
     );
   }
 }
-
-class _TagChip extends StatelessWidget {
-  const _TagChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-    );
-  }
-}
