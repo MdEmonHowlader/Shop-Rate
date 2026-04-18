@@ -328,18 +328,20 @@ class _ShopDetailsPage extends StatelessWidget {
           if (reviews.isEmpty)
             const Text('No feedback available yet.')
           else
-            ...reviews.take(5).map(
-              (review) => Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            ...reviews
+                .take(5)
+                .map(
+                  (review) => Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading: const Icon(Icons.reviews_outlined),
+                      title: Text(review.userName),
+                      subtitle: Text(review.feedback),
+                    ),
+                  ),
                 ),
-                child: ListTile(
-                  leading: const Icon(Icons.reviews_outlined),
-                  title: Text(review.userName),
-                  subtitle: Text(review.feedback),
-                ),
-              ),
-            ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
