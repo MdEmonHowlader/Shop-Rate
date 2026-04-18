@@ -4,6 +4,7 @@ class UserProfile {
     required this.name,
     required this.email,
     required this.password,
+    required this.points,
     required this.isPremium,
     required this.isAdmin,
     required this.totalReviews,
@@ -15,6 +16,7 @@ class UserProfile {
   final String name;
   final String email;
   final String password;
+  final int points;
   final bool isPremium;
   final bool isAdmin;
   final int totalReviews;
@@ -26,6 +28,7 @@ class UserProfile {
     String? name,
     String? email,
     String? password,
+    int? points,
     bool? isPremium,
     bool? isAdmin,
     int? totalReviews,
@@ -37,6 +40,7 @@ class UserProfile {
       name: name ?? this.name,
       email: email ?? this.email,
       password: password ?? this.password,
+      points: points ?? this.points,
       isPremium: isPremium ?? this.isPremium,
       isAdmin: isAdmin ?? this.isAdmin,
       totalReviews: totalReviews ?? this.totalReviews,
@@ -51,6 +55,7 @@ class UserProfile {
       name: json['name'] as String? ?? 'Unknown User',
       email: json['email'] as String? ?? '',
       password: json['password'] as String? ?? '',
+      points: (json['points'] as num?)?.toInt() ?? 0,
       isPremium: json['isPremium'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
       totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
@@ -64,6 +69,7 @@ class UserProfile {
       'name': name,
       'email': email,
       'password': password,
+      'points': points,
       'isPremium': isPremium,
       'isAdmin': isAdmin,
       'totalReviews': totalReviews,

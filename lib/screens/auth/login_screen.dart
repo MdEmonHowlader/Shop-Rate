@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     AppSession.setUser(user);
     final destination = _mode == LoginMode.admin
         ? const AdminDashboardScreen()
-        : MainShell(isPremium: user.isPremium);
+        : const MainShell();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => destination),
       (route) => false,
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _emailController,
                                 decoration: const InputDecoration(
                                   labelText: 'Email',
-                                  hintText: 'your@email.com',
+                                  hintText: 'your@gmail.com',
                                 ),
                                 validator: (value) =>
                                     value != null && value.contains('@')

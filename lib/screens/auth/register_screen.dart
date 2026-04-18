@@ -54,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     AppSession.setUser(user);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => MainShell(isPremium: user.isPremium)),
+      MaterialPageRoute(builder: (_) => const MainShell()),
       (route) => false,
     );
   }

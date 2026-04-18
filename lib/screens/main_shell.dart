@@ -5,10 +5,7 @@ import 'package:flutter_application_1/screens/reviews/reviews_screen.dart';
 import 'package:flutter_application_1/screens/scan/scan_screen.dart';
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key, bool? isPremium})
-    : isPremium = isPremium ?? false;
-
-  final bool isPremium;
+  const MainShell({super.key});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -21,7 +18,7 @@ class _MainShellState extends State<MainShell> {
     const HomeScreen(),
     const ScanScreen(),
     const ReviewsScreen(),
-    if (widget.isPremium) ProfileScreen(isPremium: widget.isPremium),
+    const ProfileScreen(),
   ];
 
   List<BottomNavigationBarItem> get _navItems => [
@@ -37,11 +34,10 @@ class _MainShellState extends State<MainShell> {
       icon: Icon(Icons.reviews_rounded),
       label: 'Reviews',
     ),
-    if (widget.isPremium)
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person_outline),
-        label: 'Profile',
-      ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.person_outline),
+      label: 'Profile',
+    ),
   ];
 
   @override

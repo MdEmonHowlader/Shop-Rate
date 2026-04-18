@@ -6,7 +6,7 @@ class AppSession {
   static UserProfile? currentUser;
 
   static bool get isLoggedIn => currentUser != null;
-  static bool get isPremium => currentUser?.isPremium ?? false;
+  static bool get isPremium => (currentUser?.points ?? 0) > 50;
   static bool get isAdmin => currentUser?.isAdmin ?? false;
 
   static void setUser(UserProfile user) {
