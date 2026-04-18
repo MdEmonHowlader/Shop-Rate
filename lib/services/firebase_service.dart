@@ -292,6 +292,19 @@ class FirebaseService {
     return null;
   }
 
+  static Future<List<ShopDetails>> searchShops(String query) async {
+    final normalized = query.trim().toLowerCase();
+    final shops = await fetchShops();
+    if (normalized.isEmpty) return shops;
+
+    return shops.where((shop) {
+      return shop.name.toLowerCase().contains(normalized) ||
+          shop.location.toLowerCase().contains(normalized) ||
+          shop.barcode.toLowerCase().contains(normalized) ||
+          shop.qrCode.toLowerCase().contains(normalized);
+    }).toList();
+  }
+
   static Future<List<StructuredReview>> fetchStructuredReviews(
     String shopId,
   ) async {
