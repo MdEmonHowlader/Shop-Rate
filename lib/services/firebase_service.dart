@@ -84,6 +84,7 @@ class FirebaseService {
           'name': 'Admin',
           'email': 'admin@email.com',
           'password': '123456',
+          'avatarBase64': '',
           'points': 0,
           'isPremium': true,
           'isAdmin': true,
@@ -325,6 +326,62 @@ class FirebaseService {
           )
           .where((review) => review.shopId == shopId)
           .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static Future<List<StructuredReview>> fetchPendingStructuredReviews() async {
+    try {
+      final decoded = await _fetchStructuredReviewsMap();
+      final reviews = decoded.entries
+          .where((entry) => entry.value is Map)
+          .map(
+            (entry) => StructuredReview.fromJson(
+              entry.key,
+              Map<String, dynamic>.from(entry.value as Map),
+            ),
+          )
+          .where((review) => review.status == 'pending')
+          .toList();
+
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reviews;
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static Future<List<ReviewEntry>> fetchUserReviews(String userId) async {
+    try {
+      if (userId.trim().isEmpty) return const [];
+      final decoded = await _fetchStructuredReviewsMap();
+      final shops = await fetchShops();
+      final shopMap = {for (final shop in shops) shop.id: shop};
+
+      final reviews = decoded.entries
+          .where((entry) => entry.value is Map)
+          .map(
+            (entry) => StructuredReview.fromJson(
+              entry.key,
+              Map<String, dynamic>.from(entry.value as Map),
+            ),
+          )
+          .where((review) => review.userId == userId)
+          .toList();
+
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return reviews.map((review) {
+        final shopName = shopMap[review.shopId]?.name ?? 'Shop review';
+        return ReviewEntry(
+          user: review.userName,
+          timeAgo: _formatTimeAgo(review.createdAt),
+          rating: review.overallRating,
+          title: shopName,
+          detail: review.feedback,
+        );
+      }).toList();
     } catch (_) {
       return const [];
     }
@@ -847,6 +904,7 @@ class FirebaseService {
         'name': name,
         'email': email,
         'password': password,
+        'avatarBase64': '',
         'points': 0,
         'isPremium': false,
         'isAdmin': false,
@@ -872,6 +930,23 @@ class FirebaseService {
     }
   }
 
+  static Future<bool> updateUserAvatar({
+    required String userId,
+    required String avatarBase64,
+  }) async {
+    try {
+      if (userId.trim().isEmpty) return false;
+      final response = await http.patch(
+        _uri('users/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'avatarBase64': avatarBase64}),
+      );
+      return response.statusCode < 400;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<void> logout() async {
     return;
   }
@@ -890,5 +965,20 @@ class FirebaseService {
     final decoded = jsonDecode(response.body);
     if (decoded is! Map) return {};
     return Map<String, dynamic>.from(decoded);
+  }
+
+  static String _formatTimeAgo(DateTime timestamp) {
+    final now = DateTime.now();
+    final diff = now.difference(timestamp);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hrs ago';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    final weeks = (diff.inDays / 7).floor();
+    if (weeks < 4) return '$weeks weeks ago';
+    final months = (diff.inDays / 30).floor();
+    if (months < 12) return '$months months ago';
+    final years = (diff.inDays / 365).floor();
+    return '$years years ago';
   }
 }
