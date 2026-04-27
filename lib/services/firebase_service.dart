@@ -9,7 +9,7 @@ class FirebaseService {
   FirebaseService._();
 
   static const String _baseUrl =
-      'https://emon-8247b-default-rtdb.firebaseio.com';
+      '';
 
   static Uri _uri(String path) => Uri.parse('$_baseUrl/$path.json');
 
